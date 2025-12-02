@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model {
-    protected $fillable = ['name','price','stock','reserved'];
-    protected $casts = ['stock' => 'integer', 'reserved' => 'integer'];
+    protected $fillable = ['name', 'price', 'available_stock'];
+    protected $casts = ['available_stock' => 'integer'];
     
     public function available() {
-        return max(0, $this->stock - $this->reserved);
+        return $this->available_stock;
     }
 }

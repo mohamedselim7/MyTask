@@ -9,16 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('hold_id')->constrained('holds')->cascadeOnDelete();
-            $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
-            $table->json('payment_meta')->nullable();
-            $table->timestamps();
-            $table->unique('hold_id');
-        });
+    public function up()
+{
+    Schema::create('orders', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('hold_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+        $table->integer('qty');
+        $table->decimal('total_price', 10, 2);
+        $table->enum('payment_status', ['pending', 'paid', 'failed'])->default('pending');
+        $table->json('payment_meta')->nullable(); 
+        $table->timestamp('paid_at')->nullable();
+        $table->timestamp('failed_at')->nullable();
+        $table->timestamps();
+    });
     }
 
     /**
