@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class StockService {
-    public function getAvailable(int $productId): int {
+     public function getAvailable(int $productId): int {
         $cacheKey = "product:{$productId}:available";
         if ($value = Cache::get($cacheKey)) {
             return (int)$value;
