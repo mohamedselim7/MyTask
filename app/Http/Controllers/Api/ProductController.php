@@ -8,9 +8,22 @@ use App\Services\StockService;
 
 class ProductController extends Controller
 {
-    public function show($id, StockService $stockService, ShowProductAction $action)
-    {
-        $data = $action->execute($id, $stockService);
-        return response()->json($data);
-    }
+    public function show($id)
+{
+    $product = Cache::remember("product.{$id}", 5, function () use ($id) {
+        return Product::select('id', 'name', 'price', 'available_stock')
+            ->withCount(['holds' => function ($query) {
+                $query->where('status', 'reserved')
+                      ->where('expires_at', '>', now());
+            }])
+            ->findOrFail($id);
+    });
+    $availableStock = $product->available_stock - $product->holds_count;
+    return response()->json([
+        'id' => $product->id,
+        'name' => $product->name,
+        'price' => $product->price,
+        'available_stock' => max(0, $availableStock)
+    ]);
+}
 }
