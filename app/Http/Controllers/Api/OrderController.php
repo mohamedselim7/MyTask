@@ -5,17 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateOrderRequest;
 use App\Actions\Orders\CreateOrderAction;
+use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
-    public function create(CreateOrderRequest $request, CreateOrderAction $action)
+    public function store(CreateOrderRequest $request, CreateOrderAction $action): JsonResponse
     {
-        $result = $action->execute($request->validated()['hold_id']);
-
-        if ($result['error']) {
-            return response()->json(['message' => $result['message']], $result['status']);
+        try {
+            $order = $action->execute($request->validated()['hold_id']);
+            return response()->json($order, 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 422);
         }
-
-        return response()->json($result['data'], $result['status']);
     }
 }

@@ -2,43 +2,45 @@
 
 namespace App\Actions\Orders;
 
-use App\Models\Hold;
 use App\Models\Order;
+use App\Models\Hold;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CreateOrderAction
 {
-    public function execute(int $holdId)
+    public function execute(int $holdId): Order
     {
-        return DB::transaction(function() use ($holdId) {
+        return DB::transaction(function () use ($holdId) {
 
             $hold = Hold::where('id', $holdId)
+                ->where('expires_at', '>', now())
+                ->whereNull('order_id')
                 ->lockForUpdate()
                 ->first();
 
-            if (!$hold || $hold->status !== 'active' || !$hold->expires_at || $hold->expires_at->isPast()) {
-                return [
-                    'error' => true,
-                    'status' => 409,
-                    'message' => 'invalid_or_expired_hold'
-                ];
+            if (!$hold) {
+                throw new \Exception('Invalid, expired, or already used hold');
             }
 
-            $hold->update(['status' => 'used']);
+            $product = Product::where('id', $hold->product_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             $order = Order::create([
                 'hold_id' => $hold->id,
-                'status' => 'pending',
+                'product_id' => $hold->product_id,
+                'qty' => $hold->qty,
+                'total_price' => $product->price * $hold->qty,
+                'payment_status' => 'pending',
             ]);
 
-            return [
-                'error' => false,
-                'status' => 201,
-                'data' => [
-                    'order_id' => $order->id,
-                    'status' => $order->status
-                ]
-            ];
-        }, 5);
+            $hold->order_id = $order->id;
+            $hold->save();
+            Cache::forget("product.{$hold->product_id}");
+
+            return $order;
+        });
     }
 }
