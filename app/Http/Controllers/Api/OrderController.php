@@ -13,7 +13,17 @@ class OrderController extends Controller
     {
         try {
             $order = $action->execute($request->validated()['hold_id']);
-            return response()->json($order, 201);
+            
+            return response()->json([
+                'id' => $order->id,
+                'hold_id' => $order->hold_id,
+                'product_id' => $order->product_id,
+                'qty' => $order->qty,
+                'total_price' => $order->total_price,
+                'payment_status' => $order->payment_status,
+                'created_at' => $order->created_at
+            ], 201);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()

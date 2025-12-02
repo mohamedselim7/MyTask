@@ -1,20 +1,29 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Controllers\Controller;
+
 use App\Http\Requests\CreateHoldRequest;
 use App\Actions\CreateHoldAction;
+use Illuminate\Http\JsonResponse;
 
 class HoldController extends Controller
 {
-   public function store(CreateHoldRequest $request, CreateHoldAction $action)
-{
-    $hold = $action->execute($request->validated());
-
-    return response()->json([
-        'status' => true,
-        'hold_id' => $hold->id,
-        'expires_at' => $hold->expires_at,
-    ]);
-}
+    public function store(CreateHoldRequest $request, CreateHoldAction $action): JsonResponse
+    {
+        try {
+            $hold = $action->execute($request->validated());
+            
+            return response()->json([
+                'status' => true,
+                'hold_id' => $hold->id,
+                'expires_at' => $hold->expires_at,
+            ], 201);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
 }
