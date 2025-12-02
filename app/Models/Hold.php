@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Hold extends Model {
+    use HasFactory;
+    
     protected $fillable = [
         'product_id',
         'qty',
         'status',
         'expires_at',
-        'order_id'
+        'order_id' 
     ];
     
     protected $dates = ['expires_at'];
@@ -25,7 +28,7 @@ class Hold extends Model {
     }
     
     public function isActive() { 
-        return $this->status === 'reserved' && 
+        return $this->status === 'active' && 
                $this->expires_at && 
                $this->expires_at->isFuture(); 
     }

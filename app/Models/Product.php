@@ -2,13 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model {
-    protected $fillable = ['name', 'price', 'available_stock'];
-    protected $casts = ['available_stock' => 'integer'];
+    use HasFactory; 
+    
+    protected $fillable = ['name', 'price', 'stock', 'reserved'];
+    protected $casts = ['stock' => 'integer', 'reserved' => 'integer'];
     
     public function available() {
-        return $this->available_stock;
+        return max(0, $this->stock - $this->reserved);
+    }
+    
+    public function getAvailableStockAttribute() {
+        return $this->available();
     }
 }

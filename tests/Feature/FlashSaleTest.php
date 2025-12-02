@@ -18,22 +18,23 @@ class FlashSaleTest extends TestCase
 
     /** @test */
     public function it_creates_product_with_stock()
-    {
-        $product = Product::factory()->create([
+{
+    $product = Product::create([
+        'name' => 'Flash Sale Item',
+        'price' => 99.99,
+        'stock' => 100, 
+        'reserved' => 0
+    ]);
+
+    $response = $this->getJson("/api/products/{$product->id}");
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'id' => $product->id,
             'name' => 'Flash Sale Item',
-            'price' => 99.99,
-            'available_stock' => 100
+            'price' => 99.99
         ]);
-
-        $response = $this->getJson("/api/products/{$product->id}");
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'id' => $product->id,
-                'name' => 'Flash Sale Item',
-                'price' => 99.99
-            ]);
-    }
+}
 
     /** @test */
     public function it_creates_hold_and_reduces_availability()
