@@ -8,22 +8,33 @@ use App\Services\StockService;
 
 class ProductController extends Controller
 {
-    public function show($id)
+   public function show($id)
 {
-    $product = Cache::remember("product.{$id}", 5, function () use ($id) {
-        return Product::select('id', 'name', 'price', 'available_stock')
-            ->withCount(['holds' => function ($query) {
-                $query->where('status', 'reserved')
-                      ->where('expires_at', '>', now());
-            }])
+    $cacheKey = "product.{$id}";
+    
+    $productData = Cache::remember($cacheKey, 30, function () use ($id) {
+        $product = Product::select('id', 'name', 'price', 'available_stock')
             ->findOrFail($id);
+        $activeHoldsQty = Hold::where('product_id', $id)
+            ->where('status', 'reserved')
+            ->where('expires_at', '>', now())
+            ->sum('qty');
+        
+        return [
+            'product' => $product,
+            'active_holds_qty' => $activeHoldsQty
+        ];
     });
-    $availableStock = $product->available_stock - $product->holds_count;
+    $actuallyAvailable = max(0, 
+        $productData['product']->available_stock - $productData['active_holds_qty']
+    );
     return response()->json([
-        'id' => $product->id,
-        'name' => $product->name,
-        'price' => $product->price,
-        'available_stock' => max(0, $availableStock)
+        'id' => $productData['product']->id,
+        'name' => $productData['product']->name,
+        'price' => $productData['product']->price,
+        'total_stock' => $productData['product']->available_stock,
+        'available_stock' => $actuallyAvailable,
+        'reserved_stock' => $productData['active_holds_qty']
     ]);
 }
 }

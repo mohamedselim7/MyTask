@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('idempotency_keys', function (Blueprint $table) {
             $table->id();
             $table->string('key')->unique();
-            $table->json('request_data');
-            $table->json('response_data');
+            $table->json('request_data')->nullable();
+            $table->json('response_data')->nullable();
+            $table->enum('status', ['processing', 'completed', 'failed'])->default('processing');
             $table->timestamps();
+            
+            $table->index('created_at');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('idempotency_keys');
     }
