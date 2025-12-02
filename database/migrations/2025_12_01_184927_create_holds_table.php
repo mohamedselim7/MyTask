@@ -9,19 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('holds', function (Blueprint $table) {
-            $table->id();
-             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('qty');
-            $table->enum('status', ['active', 'expired', 'used', 'cancelled'])->default('active');
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
-            $table->index('status');
-            $table->index('expires_at');
-        });
-    }
+   public function up()
+{
+    Schema::create('holds', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+        $table->integer('qty');
+        $table->enum('status', ['reserved', 'expired', 'used'])->default('reserved'); 
+        $table->timestamp('expires_at');
+        $table->foreignId('order_id')->nullable();
+        $table->timestamps();
+        $table->index(['product_id', 'status']);
+        $table->index('expires_at');
+    });
+}
 
     /**
      * Reverse the migrations.
