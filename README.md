@@ -10,6 +10,7 @@ cp .env.example .env
 # Edit .env for DB settings
 php artisan key:generate
 php artisan migrate
+php artisan migrate:fresh --seed
 php artisan serve
 ```
 
