@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Webhooks;
 
 use App\Repositories\IdempotencyRepository;
 use App\Repositories\OrderRepository;
@@ -53,7 +53,10 @@ class PaymentWebhookService
     {
         return DB::transaction(function () use ($data, $key, $attempt) {
 
-            $idempotent = $this->idempotency->createOrGet($key, $data);
+            $idempotent = $this->idempotency->updateOrCreate(
+                ['key' => $key],
+                ['request_data' => $data, 'response_data' => null]
+            );
 
             if ($idempotent->response_data) {
                 return response()->json($idempotent->response_data);

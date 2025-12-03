@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\CreateHoldRequest;
 use App\Actions\CreateHoldAction;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 
 class HoldController extends Controller
 {
